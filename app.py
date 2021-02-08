@@ -9,10 +9,10 @@ db = SQLAlchemy(app)
 
 
 class Meme(db.Model):
-    id: int = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name: str = db.Column(db.String(80), nullable=False)
-    url: str = db.Column(db.String(80), nullable=False)
-    caption: str = db.Column(db.String(120), nullable=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(80), nullable=False)
+    url = db.Column(db.String(80), nullable=False)
+    caption = db.Column(db.String(120), nullable=False)
 
     def __repr__(self):
         return str(id)
@@ -28,8 +28,8 @@ class Meme(db.Model):
 
 @app.route("/meme", methods=["GET"])
 def getMemes():
-    res = []
     memes = Meme.query.order_by(Meme.id.desc()).limit(100).all()
+    res = []
     for meme in memes:
         res.append(meme.asdict())
     return jsonify(res)
@@ -37,22 +37,15 @@ def getMemes():
 
 @app.route("/meme", methods=["POST"])
 def addMeme():
-    if(request.is_json):
-        response = (request.get_json())
-    else:
-        response = (request.form)
-
+    response = request.get_json() if request.is_json else request.form
     for args in ["name", "url", "caption"]:
         if not response[args]:
             return Response(status=400)
-
     meme = Meme(name=response["name"],
                 url=response["url"],
                 caption=response["caption"])
-
     db.session.add(meme)
     db.session.commit()
-
     return jsonify(meme.id)
 
 
