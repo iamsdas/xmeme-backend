@@ -29,7 +29,7 @@ class Meme(db.Model):
 @app.route("/meme", methods=["GET"])
 def getMemes():
     res = []
-    memes = Meme.query.all()
+    memes = Meme.query.order_by(Meme.id.desc()).limit(100).all()
     for meme in memes:
         res.append(meme.asdict())
     return jsonify(res)
