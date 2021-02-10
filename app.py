@@ -38,8 +38,8 @@ def getMemes():
 @app.route('/meme', methods=['POST'])
 def addMeme():
     response = request.get_json() if request.is_json else request.form
-    for args in ['name', 'url', 'caption']:
-        if not response[args]:
+    for arg in ['name', 'url', 'caption']:
+        if not response.get(arg):
             return Response(status=400)
 
     if Meme.query.filter_by(name=response['name'],
@@ -72,9 +72,11 @@ def editMeme(id):
         return Response(status=404)
 
     response = request.get_json() if request.is_json else request.form
-    if response['url'] is not None:
+    print(response)
+    print(type(response))
+    if response.get('url') is not None:
         meme.url = response['url']
-    if response['caption'] is not None:
+    if response.get('caption') is not None:
         meme.caption = response['caption']
     db.session.commit()
     return Response(status=204)
