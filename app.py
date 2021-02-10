@@ -65,6 +65,21 @@ def getMemeById(id):
     return jsonify(meme.asdict())
 
 
+@app.route('/meme/<id>', methods=['PATCH'])
+def editMeme(id):
+    meme = Meme.query.filter_by(id=id).first()
+    if meme is None:
+        return Response(status=404)
+
+    response = request.get_json() if request.is_json else request.form
+    if response['url'] is not None:
+        meme.url = response['url']
+    if response['caption'] is not None:
+        meme.caption = response['caption']
+    db.session.commit()
+    return Response(status=204)
+
+
 if __name__ == '__main__':
     db.create_all()
     app.run(host='0.0.0.0', port=8081, debug=True)
