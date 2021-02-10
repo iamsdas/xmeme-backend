@@ -41,6 +41,10 @@ def addMeme():
     for args in ["name", "url", "caption"]:
         if not response[args]:
             return Response(status=400)
+    if Meme.query.filter_by(name=response["name"],
+                            url=response["url"],
+                            caption=response["caption"]).first() is not None:
+        return Response(status=409)
     meme = Meme(name=response["name"],
                 url=response["url"],
                 caption=response["caption"])
