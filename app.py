@@ -19,14 +19,14 @@ class Meme(db.Model):
 
     def asdict(self):
         return {
-            "id": self.id,
-            "name": self.name,
-            "url": self.url,
-            "caption": self.caption
+            'id': self.id,
+            'name': self.name,
+            'url': self.url,
+            'caption': self.caption
         }
 
 
-@app.route("/meme", methods=["GET"])
+@app.route('/meme', methods=['GET'])
 def getMemes():
     memes = Meme.query.order_by(Meme.id.desc()).limit(100).all()
     res = []
@@ -35,29 +35,33 @@ def getMemes():
     return jsonify(res)
 
 
-@app.route("/meme", methods=["POST"])
+@app.route('/meme', methods=['POST'])
 def addMeme():
     response = request.get_json() if request.is_json else request.form
-    for args in ["name", "url", "caption"]:
+    for args in ['name', 'url', 'caption']:
         if not response[args]:
             return Response(status=400)
-    if Meme.query.filter_by(name=response["name"],
-                            url=response["url"],
-                            caption=response["caption"]).first() is not None:
+
+    if Meme.query.filter_by(name=response['name'],
+                            url=response['url'],
+                            caption=response['caption']).first() is not None:
         return Response(status=409)
-    meme = Meme(name=response["name"],
-                url=response["url"],
-                caption=response["caption"])
+
+    meme = Meme(name=response['name'],
+                url=response['url'],
+                caption=response['caption'])
+
     db.session.add(meme)
     db.session.commit()
     return jsonify(meme.id)
 
 
-@app.route("/meme/<id>", methods=["GET"])
+@app.route('/meme/<id>', methods=['GET'])
 def getMemeById(id):
     meme = Meme.query.filter_by(id=id).first()
     if meme is None:
         return Response(status=404)
+
     return jsonify(meme.asdict())
 
 
