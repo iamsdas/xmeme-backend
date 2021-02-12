@@ -32,7 +32,7 @@ class Meme(db.Model):
         }
 
 
-@app.route('/meme', methods=['GET'])
+@app.route('/memes', methods=['GET'])
 def getMemes():
     memes = Meme.query.order_by(Meme.id.desc()).limit(100).all()
     res = []
@@ -41,7 +41,7 @@ def getMemes():
     return jsonify(res)
 
 
-@app.route('/meme', methods=['POST'])
+@app.route('/memes', methods=['POST'])
 def addMeme():
     response = request.get_json() if request.is_json else request.form
     for arg in ['name', 'url', 'caption']:
@@ -62,7 +62,7 @@ def addMeme():
     return jsonify(meme.id)
 
 
-@app.route('/meme/<id>', methods=['GET'])
+@app.route('/memes/<id>', methods=['GET'])
 def getMemeById(id):
     meme = Meme.query.filter_by(id=id).first()
     if meme is None:
@@ -71,7 +71,7 @@ def getMemeById(id):
     return jsonify(meme.asdict())
 
 
-@app.route('/meme/<id>', methods=['PATCH'])
+@app.route('/memes/<id>', methods=['PATCH'])
 def editMeme(id):
     meme = Meme.query.filter_by(id=id).first()
     if meme is None:
