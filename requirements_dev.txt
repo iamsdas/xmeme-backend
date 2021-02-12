@@ -1,0 +1,4 @@
+#use this for local setup
+flask
+flask-sqlalchemy
+flask-cors

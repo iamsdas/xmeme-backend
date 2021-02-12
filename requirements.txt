@@ -1,5 +1,4 @@
-flask
-flask-sqlalchemy
-flask-cors
+# ONLY for production
 gunicorn
-psycopg2
+psycopg2 #does not install without postgresql installed in system
+-r requirements_dev.txt
