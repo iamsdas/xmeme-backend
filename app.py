@@ -8,15 +8,17 @@ import os
 app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
-    'DATABASE_URL',  # production env variables
+    'DATABASE_URL',  # Production env variables
     'sqlite:///db/db.sqlite')
 
 CORS(app)
 db = SQLAlchemy(app)
-api = Api(app, title='XMeme API')
+api = Api(app, title='XMeme API')  # Used for docs
 
 
+# Map Sqlalchemy with Database
 class Meme(db.Model):
+
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(80), nullable=False)
     url = db.Column(db.String(200), nullable=False)
@@ -34,6 +36,7 @@ class Meme(db.Model):
         }
 
 
+# For all requests to '/memes'
 @api.route('/memes')
 class MemesApi(Resource):
 
@@ -67,6 +70,7 @@ class MemesApi(Resource):
         return jsonify(meme.id)
 
 
+# For all requests to '/meme/id'
 @api.route('/memes/<int:id>')
 class SingleMemeApi(Resource):
 
@@ -97,6 +101,7 @@ class SingleMemeApi(Resource):
         return Response(status=204)
 
 
+# only used for debugging, gunicorn used in production
 if __name__ == '__main__':
     db.create_all()
     app.run(host='0.0.0.0', port=8081, debug=True)
