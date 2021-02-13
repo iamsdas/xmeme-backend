@@ -2,7 +2,7 @@ from flask import Flask, jsonify, Response
 from flask.globals import request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from flask_restplus import Resource, Api
+from flask_restplus import Resource, Api, abort
 import os
 
 app = Flask(__name__)
@@ -13,7 +13,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
 
 CORS(app)
 db = SQLAlchemy(app)
-api = Api(app)
+api = Api(app, title='XMeme API')
 
 
 class Meme(db.Model):
@@ -37,6 +37,7 @@ class Meme(db.Model):
 @api.route('/memes')
 class MemesApi(Resource):
 
+    @api.doc(description='Get last 100 memes')
     def get(self):
         memes = Meme.query.order_by(Meme.id.desc()).limit(100).all()
         res = []
@@ -44,16 +45,18 @@ class MemesApi(Resource):
             res.append(meme.asdict())
         return jsonify(res)
 
+    @api.doc(description='Create a new meme',
+             responses={200: "Success", 400: 'One or more fields are empty', 409: 'Duplicate request'})
     def post(self):
         response = request.get_json() if request.is_json else request.form
         for arg in ['name', 'url', 'caption']:
             if not response.get(arg):
-                return Response(status=400)
+                api.abort(400)
 
         if Meme.query.filter_by(name=response['name'],
                                 url=response['url'],
                                 caption=response['caption']).first() is not None:
-            return Response(status=409)
+            api.abort(409)
 
         meme = Meme(name=response['name'],
                     url=response['url'],
@@ -67,17 +70,21 @@ class MemesApi(Resource):
 @api.route('/memes/<int:id>')
 class SingleMemeApi(Resource):
 
+    @api.doc(description='Get meme at given ID',
+             responses={200: "Success", 404: 'ID does not exist'})
     def get(self, id):
         meme = Meme.query.filter_by(id=id).first()
         if meme is None:
-            return Response(status=404)
+            api.abort(404)
 
         return jsonify(meme.asdict())
 
+    @api.doc(description='Edit meme at given ID',
+             responses={204: "Success", 404: 'ID does not exist'})
     def patch(self, id):
         meme = Meme.query.filter_by(id=id).first()
         if meme is None:
-            return Response(status=404)
+            api.abort(404)
 
         response = request.get_json() if request.is_json else request.form
         print(response)
