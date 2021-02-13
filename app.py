@@ -2,7 +2,7 @@ from flask import Flask, jsonify, Response
 from flask.globals import request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from flask_restplus import Resource, Api, abort
+from flask_restplus import Resource, Api
 import os
 
 app = Flask(__name__)
@@ -13,7 +13,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
 
 CORS(app)
 db = SQLAlchemy(app)
-api = Api(app, title='XMeme API')  # Used for docs
+api = Api(app, title='XMeme API', doc='/swagger-ui')  # Used for docs
 
 
 # Map Sqlalchemy with Database
@@ -101,7 +101,7 @@ class SingleMemeApi(Resource):
         return Response(status=204)
 
 
-# only used for debugging, gunicorn used in production
+# Only used for debugging, gunicorn used in production
 if __name__ == '__main__':
     db.create_all()
     app.run(host='0.0.0.0', port=8081)
