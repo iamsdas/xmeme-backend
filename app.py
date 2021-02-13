@@ -2,16 +2,18 @@ from flask import Flask, jsonify, Response
 from flask.globals import request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+from flask_restplus import Resource, Api
 import os
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv(
-    'DATABASE_URL',
+    'DATABASE_URL',  # production env variables
     'sqlite:///db/db.sqlite')
 
 CORS(app)
 db = SQLAlchemy(app)
+api = Api(app)
 
 
 class Meme(db.Model):
@@ -32,60 +34,60 @@ class Meme(db.Model):
         }
 
 
-@app.route('/memes', methods=['GET'])
-def getMemes():
-    memes = Meme.query.order_by(Meme.id.desc()).limit(100).all()
-    res = []
-    for meme in memes:
-        res.append(meme.asdict())
-    return jsonify(res)
+@api.route('/memes')
+class MemesApi(Resource):
+
+    def get(self):
+        memes = Meme.query.order_by(Meme.id.desc()).limit(100).all()
+        res = []
+        for meme in memes:
+            res.append(meme.asdict())
+        return jsonify(res)
+
+    def post(self):
+        response = request.get_json() if request.is_json else request.form
+        for arg in ['name', 'url', 'caption']:
+            if not response.get(arg):
+                return Response(status=400)
+
+        if Meme.query.filter_by(name=response['name'],
+                                url=response['url'],
+                                caption=response['caption']).first() is not None:
+            return Response(status=409)
+
+        meme = Meme(name=response['name'],
+                    url=response['url'],
+                    caption=response['caption'])
+
+        db.session.add(meme)
+        db.session.commit()
+        return jsonify(meme.id)
 
 
-@app.route('/memes', methods=['POST'])
-def addMeme():
-    response = request.get_json() if request.is_json else request.form
-    for arg in ['name', 'url', 'caption']:
-        if not response.get(arg):
-            return Response(status=400)
+@api.route('/memes/<int:id>')
+class SingleMemeApi(Resource):
 
-    if Meme.query.filter_by(name=response['name'],
-                            url=response['url'],
-                            caption=response['caption']).first() is not None:
-        return Response(status=409)
+    def get(self, id):
+        meme = Meme.query.filter_by(id=id).first()
+        if meme is None:
+            return Response(status=404)
 
-    meme = Meme(name=response['name'],
-                url=response['url'],
-                caption=response['caption'])
+        return jsonify(meme.asdict())
 
-    db.session.add(meme)
-    db.session.commit()
-    return jsonify(meme.id)
+    def patch(self, id):
+        meme = Meme.query.filter_by(id=id).first()
+        if meme is None:
+            return Response(status=404)
 
-
-@app.route('/memes/<id>', methods=['GET'])
-def getMemeById(id):
-    meme = Meme.query.filter_by(id=id).first()
-    if meme is None:
-        return Response(status=404)
-
-    return jsonify(meme.asdict())
-
-
-@app.route('/memes/<id>', methods=['PATCH'])
-def editMeme(id):
-    meme = Meme.query.filter_by(id=id).first()
-    if meme is None:
-        return Response(status=404)
-
-    response = request.get_json() if request.is_json else request.form
-    print(response)
-    print(type(response))
-    if response.get('url') is not None:
-        meme.url = response['url']
-    if response.get('caption') is not None:
-        meme.caption = response['caption']
-    db.session.commit()
-    return Response(status=204)
+        response = request.get_json() if request.is_json else request.form
+        print(response)
+        print(type(response))
+        if response.get('url') is not None:
+            meme.url = response['url']
+        if response.get('caption') is not None:
+            meme.caption = response['caption']
+        db.session.commit()
+        return Response(status=204)
 
 
 if __name__ == '__main__':
