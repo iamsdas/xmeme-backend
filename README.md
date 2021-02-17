@@ -1,5 +1,5 @@
 # XMeme Backend
-This is the backend for the XMeme Project built as part of the CWoD. Build using Flask (Flask Restplus) and SQLalchemy. Sqlite is used for local testing purposes and postgrsql for production build.
+This is the backend for the XMeme Project built as part of the CWoD. Build using Flask (Flask Restplus) and SQLalchemy. Sqlite is used for local testing purposes and postgresql for production build.
  ## Setting up a development environment
 * It is assumed that `git`, `python` and `pip` are installed.
 * Clone the repo:
@@ -17,7 +17,8 @@ This is the backend for the XMeme Project built as part of the CWoD. Build using
 `docker run --net="host" --volume $PWD/db:/app/db xmeme`
 * Note: it is neccessary to use this volume as otherwise database will be lost after stopping server.
 ## Usage
-* By default server should start at `http://localhost:8081`
+* By default, the server should start at `http://localhost:8081`
 * Test by executing:
-`curl --location --request GET 'http://localhost:8081/memes'`
+`curl --location --request GET 'http://localhost:8081/memes`
 * This should result in an empty array
+* API documentation at `/swagger-ui`
