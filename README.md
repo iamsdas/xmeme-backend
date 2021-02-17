@@ -19,6 +19,6 @@ This is the backend for the XMeme Project built as part of the CWoD. Build using
 ## Usage
 * By default, the server should start at `http://localhost:8081`
 * Test by executing:
-`curl --location --request GET 'http://localhost:8081/memes`
+`curl --location --request GET 'http://localhost:8081/memes'`
 * This should result in an empty array
 * API documentation at `/swagger-ui`
